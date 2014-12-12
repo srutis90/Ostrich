@@ -66,20 +66,29 @@ function map_page_rank_map(pages, page_ranks, noutlinks, n){
     return maps;
 }
 
+var thread_count = 4;
 function map_page_rank_mapPar(pages, page_ranks, noutlinks, n){
     var t1 = performance.now();
-    var maps2d = page_ranks.mapPar(function(pg_rank, i){
-        var outbound_rank = pg_rank / noutlinks[i];
-        var map = [];
-        for(var j=0; j<n; j++){
-            map.push(pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank);
+    var slices = page_ranks.split(thread_count);
+    var sliceLength = Math.ceil(pages.length / thread_count);
+    var maps2d = slices.mapPar(function(slice, sliceIndex){
+        var sliceResult = [];
+        for(var sl=0; sl<slice.length; sl++){
+            var i = sliceIndex * sliceLength + sl;
+            var pg_rank = page_ranks[i];
+            var outbound_rank = pg_rank / noutlinks[i];
+            var map = [];
+            for(var j=0; j<n; j++){
+                map.push(pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank);
+            }
+            sliceResult.push(map);
         }
-        return map;
+    return sliceResult;
     });
     var t2 = performance.now();
-    var maps = [];
-    for(var i=0; i<maps2d.length; i++)
-        maps = maps.concat(maps2d[i]);
+    var l = maps2d.length;
+    while(l--) maps2d[l].merge();
+    var maps = maps2d.merge();
     var t3 = performance.now();
     console.log("Computation : " + (t2-t1)/1000);
     console.log("Merge results : " + (t3-t2)/1000);
