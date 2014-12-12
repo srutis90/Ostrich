@@ -152,7 +152,7 @@ function randf() {
 }
 
 function sortArray(a, start, finish) { // TA
-    var t = ArrayOld.prototype.sort.call(a.slice(start, finish), function(a, b) {return a-b;});
+    var t = ArrayOld.prototype.sort.call(a.subarray(start, finish), function(a, b) {return a-b;});
     for(var i = start; i<finish; ++i) {
         a[i] = t[i-start];
     }
@@ -183,8 +183,8 @@ function generateRandomCSR(dim, density, stddev) {
 
     update_interval = Math.round(m.num_rows/10.0);
     for (i = 0; i < m.num_rows; ++i) {
-        //if (i % update_interval == 0)
-            //console.log(i + " rows of " + m.num_rows + " generated. Continuing...");
+        if (i % update_interval == 0) console.log(i + " rows of " + m.num_rows +
+        " generated. Continuing...");
 
         nnz_ith_row_double = randNorm();
         nnz_ith_row_double *= m.stdev;
@@ -198,8 +198,9 @@ function generateRandomCSR(dim, density, stddev) {
 
         // no realloc in javascript typed arrays
         if (m.Arow[i + 1] > m.num_nonzeros) {
-            var extension = new Array(m.Arow[i+1] - m.Acol.length);
-            m.Acol.push.apply(m.Acol, extension);
+            var temp = m.Acol;
+            m.Acol = new Array(m.Arow[i + 1]); // TA
+            m.Acol.set(temp, 0);
         }
 
         for (j = 0; j < m.num_cols; ++j) {
@@ -227,11 +228,11 @@ function generateRandomCSR(dim, density, stddev) {
         nz_error*100+ "%\n");
 
     m.num_nonzeros = m.Arow[m.num_rows];
-    //console.log("Actual NUM_nonzeros: " + m.num_nonzeros + "\n");
+    console.log("Actual NUM_nonzeros: " + m.num_nonzeros + "\n");
 
     m.density_perc = m.num_nonzeros*100.0/(m.num_cols*m.num_rows);
     m.density_ppm = Math.round(m.density_perc * 10000.0);
-    //console.log("Actual Density: " + m.density_perc + "% ppm: " + m.density_ppm);
+    console.log("Actual Density: " + m.density_perc + "% ppm: " + m.density_ppm);
 
     m.Ax = new Array(m.num_nonzeros);
     for(i=0; i<m.num_nonzeros; ++i) {
@@ -275,12 +276,10 @@ function spmv_csr_map(matrix, dim, rowv, colv, v, y) {
 }
 
 function spmv_csr_mapPar(matrix, dim, rowv, colv, v, y){
-    var thread_count = 4;
+    var thread_count = 6;
     var sliceLength = Math.ceil(dim / thread_count);
-    var t0 = performance.now();
     var slices = y.split(thread_count);
 
-    var t1 = performance.now();
     var results = slices.map(function(slice, sliceIndex){
         var out = [];
         for(var i=0; i < slice.length; ++i){
@@ -295,11 +294,7 @@ function spmv_csr_mapPar(matrix, dim, rowv, colv, v, y){
             out.push(sum);
         }
     });
-    var t2 = performance.now();
     var resultsMerged = results.merge();
-    var t3 = performance.now();
-
-    console.log((t1-t0) + " , " + (t2-t1) + " , " + (t3-t2));
     return resultsMerged;
 }
 
@@ -312,7 +307,7 @@ function spmvRun(dim, density, stddev, iterations) {
 
     var t1 =  performance.now();
     for(var i = 0; i < iterations; ++i)
-        out = spmv_csr_mapPar(m.Ax, dim, m.Arow, m.Acol, v, y);
+        out = spmv_csr_for(m.Ax, dim, m.Arow, m.Acol, v, y);
     var t2 = performance.now();
 
     console.log("The total time for the spmv is " + (t2-t1)/1000 + " seconds");
