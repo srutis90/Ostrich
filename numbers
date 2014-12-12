@@ -1,0 +1,9 @@
+Pagerank : 
+map : 
+Object { status: 1, options: "runPageRank(1000,1000,0.00001,2)", time: 0.07231162010771856 }
+Object { status: 1, options: "runPageRank(1000,1000,0.00001,2)", time: 0.07443035629552469 }
+Object { status: 1, options: "runPageRank(1000,1000,0.00001,2)", time: 0.07164712243204258 }
+
+
+mapPar : bails out
+Object { status: 1, options: "runPageRank(1000,1000,0.00001,2)", time: 0.08002848927445927 }

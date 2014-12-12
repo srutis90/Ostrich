@@ -1,17 +1,15 @@
+
 <html>
 <head>
 	<meta charset='utf-8'>
 	<title></title>
 </head>
 <body>
-    <script src='../../../../common/common_rand.js'></script>
-	<!--PREAMBLE-->
-	<script src='./FILENAME.js'></script>
-	<script type='text/javascript'>
-		var result = JSON.stringify(RUN_ARGUMENT);
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.open("GET", "/asmjs/" + result, false);
-                xmlhttp.send();
-	</script>
+    <script src='../../common/common_rand.js'></script>
+	<script src='../../graphical-models/hmm/js/bwa_hmm.js'></script>
+	<script src="../../map-reduce/page-rank/js/pagerank.js"></script>
+	<script src="benchmark.js"></script>
 </body>
 </html>
+
+<!--http://localhost:63342/Ostrich/utils/js/run_template.html-->

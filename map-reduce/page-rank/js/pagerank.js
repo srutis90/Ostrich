@@ -7,7 +7,7 @@ var expected_page_ranks = [0.00005550000000000001, 0.000030000000000000004, 0.00
 // generates an array of random pages and their links
 function random_pages(n, noutlinks, divisor){
     var i, j, k;
-    var pages = new Int32Array(n*n);  // matrix cell i,j means link from j->i
+    var pages = new Array(n*n);  // matrix cell i,j means link from j->i
 
     for(i=0; i<n; ++i){
         noutlinks[i] = 0;
@@ -35,14 +35,55 @@ function init_array(a, n, val){
     }
 }
 
-function map_page_rank(pages, page_ranks, maps, noutlinks, n){
+function map_page_rank_for(pages, page_ranks, noutlinks, n){
     var i,j;
+    var size = page_ranks.length;
+    var maps = new Array(size * size);
+    var t1 = performance.now();
     for(i=0; i<n; ++i){
         var outbound_rank = page_ranks[i]/noutlinks[i];
         for(j=0; j<n; ++j){
             maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank;
         }
     }
+    var t2 = performance.now();
+    console.log("Computation : " + (t2-t1)/1000);
+    return maps;
+}
+
+function map_page_rank_map(pages, page_ranks, noutlinks, n){
+    var size = page_ranks.length;
+    var maps = new Array(size * size);
+    var t1 = performance.now();
+    page_ranks.map(function(pg_rank, i){
+        var outbound_rank = pg_rank / noutlinks[i];
+        for(var j=0; j<n; j++){
+            maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank;
+        }
+    });
+    var t2 = performance.now();
+    console.log("Computation : " + (t2-t1)/1000);
+    return maps;
+}
+
+function map_page_rank_mapPar(pages, page_ranks, noutlinks, n){
+    var t1 = performance.now();
+    var maps2d = page_ranks.mapPar(function(pg_rank, i){
+        var outbound_rank = pg_rank / noutlinks[i];
+        var map = [];
+        for(var j=0; j<n; j++){
+            map.push(pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank);
+        }
+        return map;
+    });
+    var t2 = performance.now();
+    var maps = [];
+    for(var i=0; i<maps2d.length; i++)
+        maps = maps.concat(maps2d[i]);
+    var t3 = performance.now();
+    console.log("Computation : " + (t2-t1)/1000);
+    console.log("Merge results : " + (t3-t2)/1000);
+    return maps;
 }
 
 function reduce_page_rank(page_ranks, maps, n){
@@ -76,9 +117,8 @@ function runPageRank(n, iter, thresh, divisor){
     var t;
     var max_diff=Infinity;
 
-    page_ranks = new Float64Array(n);
-    maps = new Float64Array(n*n);
-    noutlinks = new Int32Array(n);
+    page_ranks = new Array(n);
+    noutlinks = new Array(n);
 
     pages = random_pages(n,noutlinks, divisor);
     init_array(page_ranks, n, 1.0 / n);
@@ -96,7 +136,7 @@ function runPageRank(n, iter, thresh, divisor){
     var t1 = performance.now();
 
     for(t=1; t <= iter && max_diff >= thresh; ++t){
-        map_page_rank(pages, page_ranks, maps, noutlinks, n);
+        maps = map_page_rank_mapPar(pages, page_ranks, noutlinks, n);
         max_diff = reduce_page_rank(page_ranks, maps, n);
 
         /*

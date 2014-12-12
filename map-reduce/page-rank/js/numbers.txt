@@ -1,0 +1,12 @@
+for :
+"Computation : 0.049267870325471905"
+"The total time taken for a random web of 1000 pages is 0.07097560260921909 seconds
+
+map :
+"Computation : 0.06496014428025773"
+"The total time taken for a random web of 1000 pages is 0.08675861886437929 seconds
+
+mapPar:
+"Computation : 0.05694504703003281"
+"Merge results : 11.617498990964524"
+"The total time taken for a random web of 1000 pages is 11.705037426472744 seconds

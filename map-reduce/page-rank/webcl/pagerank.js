@@ -183,7 +183,7 @@ function webclPR(platformIdx, deviceIdx, n, iter, thresh, divisor){
         var queue = ctx.createCommandQueue(pd.device);
 
         // ============== Initialize Kernels ================
-        var mapKernel = kernel("map_page_rank", prgm);
+        var mapKernel = kernel("map_page_rank_for", prgm);
         var reduceKernel = kernel("reduce_page_rank", prgm);
 
         // ============== Setup Kernel Memory ================
