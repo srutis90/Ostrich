@@ -4,14 +4,33 @@
 	<title></title>
 </head>
 <body>
-    <script src='../../../../common/common_rand.js'></script>
-	<!--PREAMBLE-->
-	<script src='./FILENAME.js'></script>
-	<script type='text/javascript'>
-		var result = JSON.stringify(RUN_ARGUMENT);
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.open("GET", "/asmjs/" + result, false);
-                xmlhttp.send();
-	</script>
+<!--RIVERTRAIL-->
+<script type="text/javascript" src="../rivertrail/ParallelArray.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/narcissus/jsdefs.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/narcissus/jslex.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/narcissus/jsparse.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/narcissus/jsdecomp.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/definitions.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/helper.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/driver.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/dotviz.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/typeinference.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/rangeanalysis.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/inferblockflow.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/infermem.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/genOCL.js"></script>
+<script type="application/javascript" src="../rivertrail/jit/compiler/runOCL.js"></script>
+
+<!--UTIL-->
+<script src='../../common/common_rand.js'></script>
+
+<!--APPLICATION-->
+<!--<script src='../../graphical-models/hmm/js/bwa_hmm.js'></script>-->
+<!--<script src="../../map-reduce/page-rank/js/pagerank.js"></script>-->
+<!--<script src="../../sparse-linear-algebra/spmv/js/spmv.js"></script>-->
+<!--<script src="../../spectral-methods/fft/js/fft.js"></script>-->
+
+<!--RUNNER-->
+<script src="benchmark.js"></script>
 </body>
 </html>
