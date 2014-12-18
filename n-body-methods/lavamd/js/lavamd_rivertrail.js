@@ -33,7 +33,7 @@ function box_str() {
         //x,y,x,number, offset, nn
         data: new Float32Array([0,0,0,0,0,0]),
         // neighbor boxes
-        nei: createArray(nei_str, 26)
+        neighbours: createArray(nei_str, 26)
     };
 }
 
@@ -109,14 +109,14 @@ function lavamd(boxes1d) {
 
                                 // current neighbor box
                                 var nn = box_cpu[nh].data[5];
-                                box_cpu[nh].nei[nn][0] = (k+n);
-                                box_cpu[nh].nei[nn][1] = (j+m);
-                                box_cpu[nh].nei[nn][2] = (i+l);
-                                box_cpu[nh].nei[nn][3] =
-                                    (box_cpu[nh].nei[nn][2] * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
-                                    (box_cpu[nh].nei[nn][1] * dim_cpu.boxes1d_arg) +
-                                    box_cpu[nh].nei[nn][0];
-                                box_cpu[nh].nei[nn][4] = box_cpu[nh].nei[nn][3] * NUMBER_PAR_PER_BOX;
+                                box_cpu[nh].neighbours[nn][0] = (k+n);
+                                box_cpu[nh].neighbours[nn][1] = (j+m);
+                                box_cpu[nh].neighbours[nn][2] = (i+l);
+                                box_cpu[nh].neighbours[nn][3] =
+                                    (box_cpu[nh].neighbours[nn][2] * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
+                                    (box_cpu[nh].neighbours[nn][1] * dim_cpu.boxes1d_arg) +
+                                    box_cpu[nh].neighbours[nn][0];
+                                box_cpu[nh].neighbours[nn][4] = box_cpu[nh].neighbours[nn][3] * NUMBER_PAR_PER_BOX;
 
                                 // increment neighbor box
                                 box_cpu[nh].data[5] = nn + 1;
@@ -203,7 +203,7 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
             if(k==0) {
                 pointer = l;    // set first box to be processed to home box
             } else {
-                pointer = box[l].nei[k-1][3];   // remaining boxes are neighbor boxes
+                pointer = box[l].neighbours[k-1][3];   // remaining boxes are neighbor boxes
             }
 
             first_j = box[pointer].data[4];
