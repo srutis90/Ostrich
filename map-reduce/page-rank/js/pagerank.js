@@ -36,13 +36,12 @@ function init_array(a, n, val){
 function map_page_rank(pages, page_ranks, noutlinks, n){
     var i,j;
     var maps = new Float32Array(n * n);
-    var outbound_rank = [];
-    for(var i=0; i<n; i++)
-        outbound_rank.push(page_ranks[i]/ noutlinks[i]);
+
     var t1 = performance.now();
     for(i=0; i<n; ++i){
+        var outbound_rank = page_ranks[i]/ noutlinks[i];
         for(j=0; j<n; ++j){
-            maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank[i];
+            maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank;
         }
     }
     var t2 = performance.now();
@@ -53,10 +52,12 @@ function map_page_rank(pages, page_ranks, noutlinks, n){
 
 function map_page_rank_par(pages_pa, page_ranks_pa, noutlinks_pa, n){
     var maps_pa = new ParallelArray(new Float32Array(n*n));
+    var t1 = performance.now();
+
     var outbound_ranks_pa = page_ranks_pa.combine(function(i, noutlinks_pa){
         return this.get(i) / noutlinks_pa.get(i);
     }, noutlinks_pa);
-    var t1 = performance.now();
+
     var computed_maps_pa = maps_pa.combine(function(idx, pages_pa, outbound_ranks_pa, n){
         var x = idx[0];
         var i = Math.floor(x/n);
@@ -110,8 +111,8 @@ function runPageRank(n, iter, thresh, divisor){
 
     var t1 = performance.now();
     for(t=1; t <= iter && max_diff >= thresh; ++t){
-        maps = map_page_rank(pages, page_ranks, noutlinks, n);
-        //maps = map_page_rank_par(pages_pa, page_ranks_pa, noutlinks_pa, n);
+        //maps = map_page_rank(pages, page_ranks, noutlinks, n);
+        maps = map_page_rank_par(pages_pa, page_ranks_pa, noutlinks_pa, n);
         max_diff = reduce_page_rank(page_ranks, maps, n);
     }
     var t2 = performance.now();
