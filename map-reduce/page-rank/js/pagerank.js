@@ -36,13 +36,19 @@ function init_array(a, n, val){
 function map_page_rank(pages, page_ranks, noutlinks, n){
     var i,j;
     var maps = new Float32Array(n * n);
+    var outbound_ranks = [];
 
+    for(var i=0 ; i<n; i++)
+        outbound_ranks.push(page_ranks[i]/noutlinks[i]);
+
+    var t1 = performance.now();
     for(i=0; i<n; ++i){
-        var outbound_rank = page_ranks[i]/ noutlinks[i];
         for(j=0; j<n; ++j){
-            maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_rank;
+            maps[i*n+j] = pages[i*n+j] === 0 ? 0 : pages[i*n+j]*outbound_ranks[i];
         }
     }
+    var t2 = performance.now();
+    console.log("Sequential computation : " + (t2-t1));
     return maps;
 }
 
@@ -54,11 +60,14 @@ function map_page_rank_par(pages_pa, page_ranks_pa, noutlinks_pa, n){
         return this.get(i) / noutlinks_pa.get(i);
     }, noutlinks_pa);
 
+    var t1 = performance.now();
     var computed_maps_pa = maps_pa.combine(function(idx, pages_pa, outbound_ranks_pa, n){
         var x = idx[0];
         var i = Math.floor(x/n);
         return pages_pa.get(x) === 0 ? 0 : pages_pa.get(x)* outbound_ranks_pa.get(i);
     }, pages_pa, outbound_ranks_pa, n);
+    var t2 = performance.now();
+    console.log("Parallel computation : " + (t2-t1));
     return computed_maps_pa;
 }
 
@@ -137,23 +146,23 @@ function runPageRank(n, iter, thresh, divisor){
 
     var tStart = performance.now();
     for(t=1; t <= iter && max_diff >= thresh; ++t){
-        var t1 = performance.now();
-        var maps = map_page_rank(pages, page_ranks, noutlinks, n);
-        var t2 = performance.now();
-        var new_ranks = reduce_page_rank(page_ranks, maps, n);
-        var t3 = performance.now();
-        max_diff = reduce_page_rank_dif(page_ranks, new_ranks, n);
-        var t4 = performance.now();
-        page_ranks = new_ranks;
-
         //var t1 = performance.now();
-        //var maps_pa = map_page_rank_par(pages_pa, page_ranks_pa, noutlinks_pa, n);
+        //var maps = map_page_rank(pages, page_ranks, noutlinks, n);
         //var t2 = performance.now();
-        //var new_ranks_pa = reduce_page_rank_par(page_ranks_pa, maps_pa, n);
+        //var new_ranks = reduce_page_rank(page_ranks, maps, n);
         //var t3 = performance.now();
-        //max_diff = reduce_page_rank_dif_par(page_ranks_pa, new_ranks_pa, n);
+        //max_diff = reduce_page_rank_dif(page_ranks, new_ranks, n);
         //var t4 = performance.now();
-        //page_ranks_pa = new_ranks_pa;
+        //page_ranks = new_ranks;
+
+        var t1 = performance.now();
+        var maps_pa = map_page_rank_par(pages_pa, page_ranks_pa, noutlinks_pa, n);
+        var t2 = performance.now();
+        var new_ranks_pa = reduce_page_rank_par(page_ranks_pa, maps_pa, n);
+        var t3 = performance.now();
+        max_diff = reduce_page_rank_dif_par(page_ranks_pa, new_ranks_pa, n);
+        var t4 = performance.now();
+        page_ranks_pa = new_ranks_pa;
 
         var times = [t2-t1, t3-t2, t4-t3];
         console.log(times.join(" , "));
