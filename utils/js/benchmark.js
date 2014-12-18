@@ -3,9 +3,11 @@
 //}
 //
 //for(var i=0; i<5; i++)
-    runPageRank();
+//    runPageRank();
 
 //spmvRun(dim, density, stddev, iterations)
 
 //for(var i=0; i<5;i++)
 //    spmvRun(50000, 2000, 0.01, 5);
+
+runLavaMD();

@@ -1,28 +1,3 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2014, Erick Lavoie, Faiz Khan, Sujay Kathrotia, Vincent
- * Foley-Bourgon, Laurie Hendren
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 
 if (typeof performance === "undefined") {
     performance = Date;
@@ -31,7 +6,9 @@ if (typeof performance === "undefined") {
 var NUMBER_PAR_PER_BOX = 100;
 
 function DOT(A,B) {
-    return ((A.x)*(B.x)+(A.y)*(B.y)+(A.z)*(B.z));
+    return ((A.position_vector[0])*(B.position_vector[0])
+            +(A.position_vector[1])*(B.position_vector[1])
+            +(A.position_vector[2])*(B.position_vector[2]));
 }
 
 function createArray(creator, size) {
@@ -54,7 +31,7 @@ function nei_str() {
 function box_str() {
     // home box
     return {
-        x: 0, y: 0, z: 0,
+        position_vector:[0,0,0],
         number: 0,
         offset: 0,
         // neighbor boxes
@@ -65,7 +42,8 @@ function box_str() {
 
 function space_mem() {
     return {
-        v: 0, x: 0, y: 0, z: 0
+        v: 0,
+        position_vector : [0,0,0]
     }
 }
 
@@ -112,9 +90,9 @@ function lavamd(boxes1d) {
             for(k=0; k<dim_cpu.boxes1d_arg; k++){
 
                 // current home box
-                box_cpu[nh].x = k;
-                box_cpu[nh].y = j;
-                box_cpu[nh].z = i;
+                box_cpu[nh].position_vector[0] = k;
+                box_cpu[nh].position_vector[1] = j;
+                box_cpu[nh].position_vector[2] = i;
                 box_cpu[nh].number = nh;
                 box_cpu[nh].offset = nh * NUMBER_PAR_PER_BOX;
 
@@ -132,12 +110,13 @@ function lavamd(boxes1d) {
                                     (l==0 && m==0 && n==0)==false){
 
                                 // current neighbor box
-                                box_cpu[nh].nei[box_cpu[nh].nn].x = (k+n);
-                                box_cpu[nh].nei[box_cpu[nh].nn].y = (j+m);
-                                box_cpu[nh].nei[box_cpu[nh].nn].z = (i+l);
-                                box_cpu[nh].nei[box_cpu[nh].nn].number = (box_cpu[nh].nei[box_cpu[nh].nn].z * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
-                                                                            (box_cpu[nh].nei[box_cpu[nh].nn].y * dim_cpu.boxes1d_arg) +
-                                                                             box_cpu[nh].nei[box_cpu[nh].nn].x;
+                                box_cpu[nh].nei[box_cpu[nh].nn].position_vector[0] = (k+n);
+                                box_cpu[nh].nei[box_cpu[nh].nn].position_vector[1] = (j+m);
+                                box_cpu[nh].nei[box_cpu[nh].nn].position_vector[2] = (i+l);
+                                box_cpu[nh].nei[box_cpu[nh].nn].number =
+                                    (box_cpu[nh].nei[box_cpu[nh].nn].position_vector[2] * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
+                                    (box_cpu[nh].nei[box_cpu[nh].nn].position_vector[1] * dim_cpu.boxes1d_arg) +
+                                    box_cpu[nh].nei[box_cpu[nh].nn].position_vector[0];
                                 box_cpu[nh].nei[box_cpu[nh].nn].offset = box_cpu[nh].nei[box_cpu[nh].nn].number * NUMBER_PAR_PER_BOX;
 
                                 // increment neighbor box
@@ -157,9 +136,9 @@ function lavamd(boxes1d) {
     rv_cpu = createArray(space_mem, dim_cpu.space_elem); //(FOUR_VECTOR*)malloc(dim_cpu.space_mem);
     for(i=0; i<dim_cpu.space_elem; i=i+1){
         rv_cpu[i].v = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
-        rv_cpu[i].x = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
-        rv_cpu[i].y = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
-        rv_cpu[i].z = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
+        rv_cpu[i].position_vector[0] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
+        rv_cpu[i].position_vector[1] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
+        rv_cpu[i].position_vector[2] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
     }
 
     // input (charge)
@@ -169,9 +148,9 @@ function lavamd(boxes1d) {
     }
 
     // output (forces)
-    console.log("Baseline version");
     fv_cpu = createArray(space_mem, dim_cpu.space_elem); //(FOUR_VECTOR*)malloc(dim_cpu.space_mem);
 
+    console.log("Rivertrail enabled");
     time0 = performance.now();
 
     kernel_cpu(par_cpu, dim_cpu, box_cpu, rv_cpu, qv_cpu, fv_cpu);
@@ -180,13 +159,16 @@ function lavamd(boxes1d) {
     if (dim_cpu.boxes1d_arg == expected_boxes1d) {
         for(i=0; i<dim_cpu.space_elem; i=i+1) {
             sum.v += fv_cpu[i].v;
-            sum.x += fv_cpu[i].x;
-            sum.y += fv_cpu[i].y;
-            sum.z += fv_cpu[i].z;
+            sum.position_vector[0] += fv_cpu[i].position_vector[0];
+            sum.position_vector[1] += fv_cpu[i].position_vector[1];
+            sum.position_vector[2] += fv_cpu[i].position_vector[2];
         }
-        if(Math.round(sum.v) != expectedAns[0] || Math.round(sum.x) != expectedAns[1] || Math.round(sum.y) != expectedAns[2] || Math.round(sum.z) != expectedAns[3]) {
+        if(Math.round(sum.v) != expectedAns[0] ||
+            Math.round(sum.position_vector[0]) != expectedAns[1] ||
+            Math.round(sum.position_vector[1]) != expectedAns[2] ||
+            Math.round(sum.position_vector[2]) != expectedAns[3]) {
             console.log("Expected: [" + expectedAns[0] + ", " + expectedAns[1] + ", " + expectedAns[2] + ", " + expectedAns[3] + "]");
-            console.log("Got: [" + sum.v + ", " + sum.x + ", " + sum.y + ", " + sum.z + "]");
+            console.log("Got: [" + sum.v + ", " + sum.position_vector[0] + ", " + sum.position_vector[1] + ", " + sum.position_vector[2] + "]");
         }
     } else {
         console.log("WARNING: no self-checking for input size of '%d'\n", dim_cpu.boxes1d_arg);
@@ -233,18 +215,18 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
                     u2 = a2*r2;
                     vij= Math.exp(-u2);
                     fs = 2.*vij;
-                    var dx = rv[first_i+i].x  - rv[first_j+j].x;
-                    var dy = rv[first_i+i].y  - rv[first_j+j].y;
-                    var dz = rv[first_i+i].z  - rv[first_j+j].z;
+                    var dx = rv[first_i+i].position_vector[0]  - rv[first_j+j].position_vector[0];
+                    var dy = rv[first_i+i].position_vector[1]  - rv[first_j+j].position_vector[1];
+                    var dz = rv[first_i+i].position_vector[2]  - rv[first_j+j].position_vector[2];
                     fxij=fs*dx;
                     fyij=fs*dy;
                     fzij=fs*dz;
 
                     // forces
                     fv[first_i+i].v +=  qv[first_j+j]*vij;
-                    fv[first_i+i].x +=  qv[first_j+j]*fxij;
-                    fv[first_i+i].y +=  qv[first_j+j]*fyij;
-                    fv[first_i+i].z +=  qv[first_j+j]*fzij;
+                    fv[first_i+i].position_vector[0] +=  qv[first_j+j]*fxij;
+                    fv[first_i+i].position_vector[1] +=  qv[first_j+j]*fyij;
+                    fv[first_i+i].position_vector[2] +=  qv[first_j+j]*fzij;
                 }
             }
         }

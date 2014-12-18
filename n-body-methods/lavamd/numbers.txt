@@ -1,0 +1,10 @@
+BASE : lavamd.js
+[11:54:01.438] "Configuration used: cores = 1, boxes1d = 1
+[11:54:01.479] "WARNING: no self-checking for input size of '1'
+[11:54:01.479] "Total time: 0.03676541829347775 s"
+
+[11:56:29.099] "Configuration used: cores = 4, boxes1d = 1
+[11:56:29.140] "WARNING: no self-checking for input size of '1'
+[11:56:29.140] "Total time: 0.03657447821132621 s"
+
+lavamd_rivertrail.js
