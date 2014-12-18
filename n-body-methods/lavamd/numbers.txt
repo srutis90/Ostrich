@@ -1,0 +1,18 @@
+lavamd.js
+[12:20:55.102] "Configuration used: cores = 4, boxes1d = 6"
+[12:20:55.152] "Baseline version"
+[12:21:00.553] "Total time: 5.39647762810827 s"
+
+[12:22:00.839] "Configuration used: cores = 4, boxes1d = 6"
+[12:22:00.890] "Baseline version"
+[12:22:06.311] "Total time: 5.416166669896264 s"
+
+
+lavamd_rivertrail.js
+[12:22:54.580] "Configuration used: cores = 4, boxes1d = 6"
+[12:22:54.630] "Rivertrail enabled"
+[12:23:01.341] "Total time: 6.709997934633269 s"
+
+[12:24:16.364] "Configuration used: cores = 4, boxes1d = 6"
+[12:24:16.422] "Rivertrail enabled"
+[12:24:23.852] "Total time: 7.42871814455393 s"
