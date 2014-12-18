@@ -6,9 +6,9 @@ if (typeof performance === "undefined") {
 var NUMBER_PAR_PER_BOX = 100;
 
 function DOT(A,B) {
-    return ((A.position_vector[0])*(B.position_vector[0])
-            +(A.position_vector[1])*(B.position_vector[1])
-            +(A.position_vector[2])*(B.position_vector[2]));
+    return ((A.data[0])*(B.data[0])
+            +(A.data[1])*(B.data[1])
+            +(A.data[2])*(B.data[2]));
 }
 
 function createArray(creator, size) {
@@ -22,18 +22,20 @@ function createArray(creator, size) {
 function nei_str() {
     // neighbor box
     return {
-        position_vector:[0,0,0],
-        number: 0,
-        offset: 0
+        data : new Float32Array([0,0,0,0,0])
+        //position_vector:new Float32Array([0,0,0]),
+        //number: 0,
+        //offset: 0
     };
 }
 
 function box_str() {
     // home box
     return {
-        position_vector:[0,0,0],
-        number: 0,
-        offset: 0,
+        //position_vector:new Float32Array([0,0,0]),
+        //number: 0,
+        //offset: 0,
+        data: new Float32Array([0,0,0,0,0]),
         // neighbor boxes
         nn: 0,
         nei: createArray(nei_str, 26)
@@ -42,8 +44,9 @@ function box_str() {
 
 function space_mem() {
     return {
-        v: 0,
-        position_vector : [0,0,0]
+        data:new Float32Array([0,0,0,0])
+        //v: 0,
+        //position_vector : new Float32Array([0,0,0])
     }
 }
 
@@ -90,11 +93,12 @@ function lavamd(boxes1d) {
             for(k=0; k<dim_cpu.boxes1d_arg; k++){
 
                 // current home box
-                box_cpu[nh].position_vector[0] = k;
-                box_cpu[nh].position_vector[1] = j;
-                box_cpu[nh].position_vector[2] = i;
-                box_cpu[nh].number = nh;
-                box_cpu[nh].offset = nh * NUMBER_PAR_PER_BOX;
+                //[x, y, x, number, offset]
+                box_cpu[nh].data[0] = k;
+                box_cpu[nh].data[1] = j;
+                box_cpu[nh].data[2] = i;
+                box_cpu[nh].data[3] = nh;
+                box_cpu[nh].data[4] = nh * NUMBER_PAR_PER_BOX;
 
                 // initialize number of neighbor boxes
                 box_cpu[nh].nn = 0;
@@ -110,14 +114,14 @@ function lavamd(boxes1d) {
                                     (l==0 && m==0 && n==0)==false){
 
                                 // current neighbor box
-                                box_cpu[nh].nei[box_cpu[nh].nn].position_vector[0] = (k+n);
-                                box_cpu[nh].nei[box_cpu[nh].nn].position_vector[1] = (j+m);
-                                box_cpu[nh].nei[box_cpu[nh].nn].position_vector[2] = (i+l);
-                                box_cpu[nh].nei[box_cpu[nh].nn].number =
-                                    (box_cpu[nh].nei[box_cpu[nh].nn].position_vector[2] * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
-                                    (box_cpu[nh].nei[box_cpu[nh].nn].position_vector[1] * dim_cpu.boxes1d_arg) +
-                                    box_cpu[nh].nei[box_cpu[nh].nn].position_vector[0];
-                                box_cpu[nh].nei[box_cpu[nh].nn].offset = box_cpu[nh].nei[box_cpu[nh].nn].number * NUMBER_PAR_PER_BOX;
+                                box_cpu[nh].nei[box_cpu[nh].nn].data[0] = (k+n);
+                                box_cpu[nh].nei[box_cpu[nh].nn].data[1] = (j+m);
+                                box_cpu[nh].nei[box_cpu[nh].nn].data[2] = (i+l);
+                                box_cpu[nh].nei[box_cpu[nh].nn].data[3] =
+                                    (box_cpu[nh].nei[box_cpu[nh].nn].data[2] * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg) +
+                                    (box_cpu[nh].nei[box_cpu[nh].nn].data[1] * dim_cpu.boxes1d_arg) +
+                                    box_cpu[nh].nei[box_cpu[nh].nn].data[0];
+                                box_cpu[nh].nei[box_cpu[nh].nn].data[4] = box_cpu[nh].nei[box_cpu[nh].nn].data[3] * NUMBER_PAR_PER_BOX;
 
                                 // increment neighbor box
                                 box_cpu[nh].nn = box_cpu[nh].nn + 1;
@@ -135,10 +139,10 @@ function lavamd(boxes1d) {
     // input (distances)
     rv_cpu = createArray(space_mem, dim_cpu.space_elem); //(FOUR_VECTOR*)malloc(dim_cpu.space_mem);
     for(i=0; i<dim_cpu.space_elem; i=i+1){
-        rv_cpu[i].v = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
-        rv_cpu[i].position_vector[0] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
-        rv_cpu[i].position_vector[1] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
-        rv_cpu[i].position_vector[2] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
+        rv_cpu[i].data[3] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
+        rv_cpu[i].data[0] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
+        rv_cpu[i].data[1] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
+        rv_cpu[i].data[2] = (Math.commonRandom()%10 + 1) / 10.0;        // get a number in the range 0.1 - 1.0
     }
 
     // input (charge)
@@ -158,17 +162,17 @@ function lavamd(boxes1d) {
     var sum = space_mem();
     if (dim_cpu.boxes1d_arg == expected_boxes1d) {
         for(i=0; i<dim_cpu.space_elem; i=i+1) {
-            sum.v += fv_cpu[i].v;
-            sum.position_vector[0] += fv_cpu[i].position_vector[0];
-            sum.position_vector[1] += fv_cpu[i].position_vector[1];
-            sum.position_vector[2] += fv_cpu[i].position_vector[2];
+            sum.data[3] += fv_cpu[i].data[3];
+            sum.data[0] += fv_cpu[i].data[0];
+            sum.data[1] += fv_cpu[i].data[1];
+            sum.data[2] += fv_cpu[i].data[2];
         }
-        if(Math.round(sum.v) != expectedAns[0] ||
-            Math.round(sum.position_vector[0]) != expectedAns[1] ||
-            Math.round(sum.position_vector[1]) != expectedAns[2] ||
-            Math.round(sum.position_vector[2]) != expectedAns[3]) {
+        if(Math.round(sum.data[3]) != expectedAns[0] ||
+            Math.round(sum.data[0]) != expectedAns[1] ||
+            Math.round(sum.data[1]) != expectedAns[2] ||
+            Math.round(sum.data[2]) != expectedAns[3]) {
             console.log("Expected: [" + expectedAns[0] + ", " + expectedAns[1] + ", " + expectedAns[2] + ", " + expectedAns[3] + "]");
-            console.log("Got: [" + sum.v + ", " + sum.position_vector[0] + ", " + sum.position_vector[1] + ", " + sum.position_vector[2] + "]");
+            console.log("Got: [" + sum.data[3] + ", " + sum.data[0] + ", " + sum.data[1] + ", " + sum.data[2] + "]");
         }
     } else {
         console.log("WARNING: no self-checking for input size of '%d'\n", dim_cpu.boxes1d_arg);
@@ -196,7 +200,7 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
 
     for(l=0; l<dim.number_boxes; l=l+1) {
         // home box - box parameters
-        first_i = box[l].offset;
+        first_i = box[l].data[4];
 
         //  Do for the # of (home+neighbor) boxes
         for(k=0; k<(1+box[l].nn); k++) {
@@ -204,29 +208,29 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
             if(k==0) {
                 pointer = l;    // set first box to be processed to home box
             } else {
-                pointer = box[l].nei[k-1].number;   // remaining boxes are neighbor boxes
+                pointer = box[l].nei[k-1].data[3];   // remaining boxes are neighbor boxes
             }
 
-            first_j = box[pointer].offset;
+            first_j = box[pointer].data[4];
 
             for(i=0; i<NUMBER_PAR_PER_BOX; i=i+1) {
                 for(j=0; j<NUMBER_PAR_PER_BOX; j=j+1) {
-                    r2 = rv[first_i+i].v + rv[first_j+j].v - DOT(rv[first_i+i],rv[first_j+j]);
+                    r2 = rv[first_i+i].data[3] + rv[first_j+j].data[3] - DOT(rv[first_i+i],rv[first_j+j]);
                     u2 = a2*r2;
                     vij= Math.exp(-u2);
                     fs = 2.*vij;
-                    var dx = rv[first_i+i].position_vector[0]  - rv[first_j+j].position_vector[0];
-                    var dy = rv[first_i+i].position_vector[1]  - rv[first_j+j].position_vector[1];
-                    var dz = rv[first_i+i].position_vector[2]  - rv[first_j+j].position_vector[2];
+                    var dx = rv[first_i+i].data[0]  - rv[first_j+j].data[0];
+                    var dy = rv[first_i+i].data[1]  - rv[first_j+j].data[1];
+                    var dz = rv[first_i+i].data[2]  - rv[first_j+j].data[2];
                     fxij=fs*dx;
                     fyij=fs*dy;
                     fzij=fs*dz;
 
-                    // forces
-                    fv[first_i+i].v +=  qv[first_j+j]*vij;
-                    fv[first_i+i].position_vector[0] +=  qv[first_j+j]*fxij;
-                    fv[first_i+i].position_vector[1] +=  qv[first_j+j]*fyij;
-                    fv[first_i+i].position_vector[2] +=  qv[first_j+j]*fzij;
+                    // forces [x,y,z,v]
+                    fv[first_i+i].data[3] +=  qv[first_j+j]*vij;
+                    fv[first_i+i].data[0] +=  qv[first_j+j]*fxij;
+                    fv[first_i+i].data[1] +=  qv[first_j+j]*fyij;
+                    fv[first_i+i].data[2] +=  qv[first_j+j]*fzij;
                 }
             }
         }
