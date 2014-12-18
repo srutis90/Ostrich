@@ -6,7 +6,9 @@ if (typeof performance === "undefined") {
 var NUMBER_PAR_PER_BOX = 100;
 
 function DOT(A,B) {
-    return ((A[0])*(B[0]) + (A[1])*(B[1]) + (A[2])*(B[2]));
+    return ((A[0])*(B[0])
+            +(A[1])*(B[1])
+            +(A[2])*(B[2]));
 }
 
 function createArray(creator, size) {
@@ -21,12 +23,13 @@ function nei_str() {
     // neighbor box
     //x,y,x,number, offset
     return new Float32Array([0,0,0,0,0]);
+
 }
 
-function createBoxes(nBox) {
-    // neighbor box
-    //x,y,z,number, offset, nn
-    return new Float32Array(nBox * 6);
+function box_str() {
+    // home box
+    //x,y,x,number, offset, nn
+    return new Float32Array([0,0,0,0,0,0]);
 }
 
 function space_mem() {
@@ -67,8 +70,8 @@ function lavamd(boxes1d) {
     dim_cpu.space_elem = dim_cpu.number_boxes * NUMBER_PAR_PER_BOX;
 
     // BOX
-    box_cpu = createBoxes(dim_cpu.number_boxes);
-    neighbors = createArray(nei_str, dim_cpu.number_boxes * 26);
+    box_cpu = createArray(box_str, dim_cpu.number_boxes);   // allocate boxes
+    neighbors = createArray(nei_str, dim_cpu.number_boxes * 26); //allocate neighbors for each box
     // initialize number of home boxes
     nh = 0;
 
@@ -81,14 +84,14 @@ function lavamd(boxes1d) {
 
                 // current home box
                 //[x, y, x, number, offset, nn]
-                box_cpu[nh * 6 + 0] = k;
-                box_cpu[nh * 6 + 1] = j;
-                box_cpu[nh * 6 + 2] = i;
-                box_cpu[nh * 6 + 3] = nh;
-                box_cpu[nh * 6 + 4] = nh * NUMBER_PAR_PER_BOX;
+                box_cpu[nh][0] = k;
+                box_cpu[nh][1] = j;
+                box_cpu[nh][2] = i;
+                box_cpu[nh][3] = nh;
+                box_cpu[nh][4] = nh * NUMBER_PAR_PER_BOX;
 
                 // initialize number of neighbor boxes
-                box_cpu[nh * 6 + 5] = 0;
+                box_cpu[nh][5] = 0;
 
                 // neighbor boxes in z direction
                 for(l=-1; l<2; l++){
@@ -101,7 +104,7 @@ function lavamd(boxes1d) {
                                     (l==0 && m==0 && n==0)==false){
 
                                 // current neighbor box
-                                var nn = box_cpu[nh * 6 + 5];
+                                var nn = box_cpu[nh][5];
                                 var neighborIndex = nh * 26 + nn;
                                 var currentNeighbor = neighbors[neighborIndex];
                                 currentNeighbor[0] = (k+n);
@@ -114,7 +117,7 @@ function lavamd(boxes1d) {
                                 currentNeighbor[4] = currentNeighbor[3] * NUMBER_PAR_PER_BOX;
 
                                 // increment neighbor box
-                                box_cpu[nh * 6 + 5] = nn + 1;
+                                box_cpu[nh][5] = nn + 1;
                             }
                         } // neighbor boxes in x direction
                     } // neighbor boxes in y direction
@@ -190,10 +193,10 @@ function kernel_cpu(par, dim, box, rv, qv, fv, nei) {
 
     for(l=0; l<dim.number_boxes; l=l+1) {
         // home box - box parameters
-        first_i = box[l * 6 + 4];
+        first_i = box[l][4];
 
         //  Do for the # of (home+neighbor) boxes
-        for(k=0; k<(1+box[l * 6 + 5]); k++) {
+        for(k=0; k<(1+box[l][5]); k++) {
             //  neighbor box - get pointer to the right box
             if(k==0) {
                 pointer = l;    // set first box to be processed to home box
@@ -202,7 +205,7 @@ function kernel_cpu(par, dim, box, rv, qv, fv, nei) {
                 pointer = nei[boxNeighborStart + k-1][3];   // remaining boxes are neighbor boxes
             }
 
-            first_j = box[pointer * 6 + 4];
+            first_j = box[pointer][4];
 
             for(i=0; i<NUMBER_PAR_PER_BOX; i=i+1) {
                 for(j=0; j<NUMBER_PAR_PER_BOX; j=j+1) {
