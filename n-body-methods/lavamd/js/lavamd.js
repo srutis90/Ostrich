@@ -28,7 +28,7 @@ if (typeof performance === "undefined") {
     performance = Date;
 }
 
-var NUMBER_PAR_PER_BOX = 100;
+var NUMBER_PAR_PER_BOX = 1;
 
 function DOT(A,B) {
     return ((A.x)*(B.x)+(A.y)*(B.y)+(A.z)*(B.z));
@@ -132,6 +132,7 @@ function lavamd(boxes1d) {
                                     (l==0 && m==0 && n==0)==false){
 
                                 // current neighbor box
+                                var cn = box_cpu[nh].nei[box_cpu[nh].nn];
                                 box_cpu[nh].nei[box_cpu[nh].nn].x = (k+n);
                                 box_cpu[nh].nei[box_cpu[nh].nn].y = (j+m);
                                 box_cpu[nh].nei[box_cpu[nh].nn].z = (i+l);
@@ -142,11 +143,14 @@ function lavamd(boxes1d) {
 
                                 // increment neighbor box
                                 box_cpu[nh].nn = box_cpu[nh].nn + 1;
+                                //console.log("neighbor : " + nh + ":" + box_cpu[nh].nn + "|" + [cn.x, cn.y, cn.z, cn.number, cn.offset].join(";"));
                             }
                         } // neighbor boxes in x direction
                     } // neighbor boxes in y direction
                 } // neighbor boxes in z direction
                 // increment home box
+                var b = box_cpu[nh];
+                //console.log(nh + " : " +[b.x, b.y, b.z, b.number, b.offset, b.nn].join(","));
                 nh = nh + 1;
             } // home boxes in x direction
         } // home boxes in y direction
@@ -177,13 +181,15 @@ function lavamd(boxes1d) {
     kernel_cpu(par_cpu, dim_cpu, box_cpu, rv_cpu, qv_cpu, fv_cpu);
 
     var sum = space_mem();
+    for(i=0; i<dim_cpu.space_elem; i=i+1) {
+        sum.v += fv_cpu[i].v;
+        sum.x += fv_cpu[i].x;
+        sum.y += fv_cpu[i].y;
+        sum.z += fv_cpu[i].z;
+    }
+    console.log("Got: [" + sum.v + ", " + sum.x + ", " + sum.y + ", " + sum.z + "]");
     if (dim_cpu.boxes1d_arg == expected_boxes1d) {
-        for(i=0; i<dim_cpu.space_elem; i=i+1) {
-            sum.v += fv_cpu[i].v;
-            sum.x += fv_cpu[i].x;
-            sum.y += fv_cpu[i].y;
-            sum.z += fv_cpu[i].z;
-        }
+
         if(Math.round(sum.v) != expectedAns[0] || Math.round(sum.x) != expectedAns[1] || Math.round(sum.y) != expectedAns[2] || Math.round(sum.z) != expectedAns[3]) {
             console.log("Expected: [" + expectedAns[0] + ", " + expectedAns[1] + ", " + expectedAns[2] + ", " + expectedAns[3] + "]");
             console.log("Got: [" + sum.v + ", " + sum.x + ", " + sum.y + ", " + sum.z + "]");
@@ -226,9 +232,9 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
             }
 
             first_j = box[pointer].offset;
-
             for(i=0; i<NUMBER_PAR_PER_BOX; i=i+1) {
                 for(j=0; j<NUMBER_PAR_PER_BOX; j=j+1) {
+                    console.log((first_i+i) +"," + (first_j+j) + "," + rv[first_i+i].v + "," + rv[first_j+j].v);
                     r2 = rv[first_i+i].v + rv[first_j+j].v - DOT(rv[first_i+i],rv[first_j+j]);
                     u2 = a2*r2;
                     vij= Math.exp(-u2);
