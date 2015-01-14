@@ -3,7 +3,7 @@ if (typeof performance === "undefined") {
     performance = Date;
 }
 
-var NUMBER_PAR_PER_BOX = 1;
+var NUMBER_PAR_PER_BOX = 100;
 
 function DOT(A,B) {
     return ((A[0])*(B[0])
@@ -37,7 +37,7 @@ function lavamd(boxes1d) {
     var expectedAns = [4144561.0, 181665.0, -190914.0, 140373.0];
 
     // assign default values
-    dim_cpu.cores_arg = 4;
+    dim_cpu.cores_arg = 1;
     dim_cpu.boxes1d_arg = boxes1d || 1;
 
     if(dim_cpu.boxes1d_arg < 0) {

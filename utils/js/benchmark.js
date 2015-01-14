@@ -10,4 +10,4 @@
 //for(var i=0; i<5;i++)
 //    spmvRun(50000, 2000, 0.01, 5);
 
-runLavaMD(2);
+runLavaMD(6);

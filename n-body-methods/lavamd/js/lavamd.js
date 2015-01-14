@@ -28,7 +28,7 @@ if (typeof performance === "undefined") {
     performance = Date;
 }
 
-var NUMBER_PAR_PER_BOX = 1;
+var NUMBER_PAR_PER_BOX = 100;
 
 function DOT(A,B) {
     return ((A.x)*(B.x)+(A.y)*(B.y)+(A.z)*(B.z));
@@ -80,7 +80,7 @@ function lavamd(boxes1d) {
     var expectedAns = [4144561.0, 181665.0, -190914.0, 140373.0];
 
     // assign default values
-    dim_cpu.cores_arg = 4;
+    dim_cpu.cores_arg = 1;
     dim_cpu.boxes1d_arg = boxes1d || 1;
 
     if(dim_cpu.boxes1d_arg < 0) {
@@ -234,7 +234,6 @@ function kernel_cpu(par, dim, box, rv, qv, fv) {
             first_j = box[pointer].offset;
             for(i=0; i<NUMBER_PAR_PER_BOX; i=i+1) {
                 for(j=0; j<NUMBER_PAR_PER_BOX; j=j+1) {
-                    console.log((first_i+i) +"," + (first_j+j) + "," + rv[first_i+i].v + "," + rv[first_j+j].v);
                     r2 = rv[first_i+i].v + rv[first_j+j].v - DOT(rv[first_i+i],rv[first_j+j]);
                     u2 = a2*r2;
                     vij= Math.exp(-u2);
